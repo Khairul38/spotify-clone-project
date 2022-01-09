@@ -1,7 +1,8 @@
 import { VolumeUpIcon as VolumeDownIcon } from "@heroicons/react/outline";
 import { RewindIcon, SwitchHorizontalIcon, FastForwardIcon, PauseIcon, ReplyIcon, PlayIcon, VolumeUpIcon } from "@heroicons/react/solid";
+import { debounce } from "lodash";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
 import { currentTrackIdState, isPlayingState } from "../atoms/songAtom";
 import useSongInfo from "../hooks/useSongInfo";
@@ -49,7 +50,21 @@ function Player() {
             fetchCurrentSong();
             setVolume(50);
         }
-    }, [currentTrackIdState, spotifyApi, session])
+    }, [currentTrackIdState, spotifyApi, session]);
+
+    useEffect(() => {
+        if (volume > 0 && volume < 100) {
+            debouncedAdjustVolume(volume);
+        }
+    }, [volume])
+
+    const debouncedAdjustVolume = useCallback(
+        debounce(volume => {
+            spotifyApi.setVolume(volume).catch(err => {});
+        }, 500),
+        []
+    )
+
     return (
         <div className="h-24 bg-gradient-to-b from-black to-gray-900 text-white grid grid-cols-3 text-xs md:text-base px-2 md:px-8">
             {/* Left */}
@@ -81,9 +96,9 @@ function Player() {
             </div>
             {/* Right */}
             <div className="flex items-center space-x-4 md:space-x-4 justify-end pr-5">
-                <VolumeDownIcon className="button" />
-                <input className="w-14 md:w-28" type="range" value={volume} min={0} max={100} onChange={} />
-                <VolumeUpIcon className="button" />
+                <VolumeDownIcon onClick={() => volume > 0 && setVolume(volume - 10)} className="button" />
+                <input className="w-14 md:w-28" type="range" value={volume} min={0} max={100} onChange={(e) => setVolume(Number(e.target.value))} />
+                <VolumeUpIcon onClick={() => volume < 100 && setVolume(volume + 10)} className="button" />
             </div>
         </div>
     )

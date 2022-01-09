@@ -8,7 +8,7 @@ function useSongInfo() {
     const [currentIdTrack, setCurrentIdTrack] = useRecoilState(currentTrackIdState)
     const [songInfo, setSongInfo] = useState(null);
 
-    console.log(songInfo);
+    // console.log(songInfo);
 
 
     useEffect(() => {
